@@ -8,7 +8,7 @@ import sys
 import socket
 hostname = socket.gethostname()
 
-print "---------- Entering 'deploy_templates' on {}".format(hostname)
+print "---------- Entering 'deploy_templates'"
 
 # Deploy the configuration file templates in the spark-ec2/templates directory
 # to the root filesystem, substituting variables such as the master hostname,
