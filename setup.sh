@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "------ ENTERING git clone setup.sh..." `hostname`
+
 # Make sure we are in the spark-ec2 directory
 cd /root/spark-ec2
 
@@ -20,6 +22,7 @@ export HOSTNAME=$PRIVATE_DNS  # Fix the bash built-in hostname variable too
 echo "Setting up Spark on `hostname`..."
 
 # Set up the masters, slaves, etc files based on cluster env variables
+echo "*** env variable SLAVES = $SLAVES"
 echo "$MASTERS" > masters
 echo "$SLAVES" > slaves
 

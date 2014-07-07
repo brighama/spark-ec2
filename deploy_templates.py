@@ -5,6 +5,10 @@ from __future__ import with_statement
 
 import os
 import sys
+import socket
+hostname = socket.gethostname()
+
+print "---------- Entering 'deploy_templates' on {}".format(hostname)
 
 # Deploy the configuration file templates in the spark-ec2/templates directory
 # to the root filesystem, substituting variables such as the master hostname,
@@ -19,14 +23,19 @@ master_ram_kb = int(
 # This is the master's memory. Try to find slave's memory as well
 first_slave = os.popen("cat /root/spark-ec2/slaves | head -1").read().strip()
 
+if not first_slave:
+    print "*** ERROR! No slaves found in /root/spark-ec2/slaves of {}!".format(hostname)
+
 slave_mem_command = "ssh -t -o StrictHostKeyChecking=no %s %s" %\
         (first_slave, mem_command)
 
 slave_cpu_command = "ssh -t -o StrictHostKeyChecking=no %s %s" %\
         (first_slave, cpu_command)
 
+print "Computing system memory for slave #1..."
 slave_ram_kb = int(os.popen(slave_mem_command).read().strip())
 
+print "Computing 'nproc' for slave #1..."
 slave_cpus = int(os.popen(slave_cpu_command).read().strip())
 
 system_ram_kb = min(slave_ram_kb, master_ram_kb)
@@ -73,6 +82,8 @@ template_vars = {
 
 template_dir="/root/spark-ec2/templates"
 
+print "Filling out templates and writing to {}...".format(dest_dir)
+
 for path, dirs, files in os.walk(template_dir):
   if path.find(".svn") == -1:
     dest_dir = os.path.join('/', path[len(template_dir):])
@@ -83,9 +94,16 @@ for path, dirs, files in os.walk(template_dir):
         dest_file = os.path.join(dest_dir, filename)
         with open(os.path.join(path, filename)) as src:
           with open(dest_file, "w") as dest:
-            print "Configuring " + dest_file
+            print "\tConfiguring " + dest_file
             text = src.read()
             for key in template_vars:
               text = text.replace("{{" + key + "}}", template_vars[key])
             dest.write(text)
             dest.close()
+
+print "Done installing files to {} on {}".format(dest_dir, hostname)
+
+
+
+
+
